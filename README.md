@@ -1,10 +1,10 @@
 # EdmondsBlossom
 Edmond's maximum weighted matching algorithm (Blossom algorithm) in O(n^3)
 
-##Installation
+## Installation
 `npm install edmonds-blossom --save`
 
-##How to use
+## How to use
 ```
 var blossom = require('./edmonds-blossom');
 var data = [
@@ -16,7 +16,7 @@ var results = blossom(data);
 //results: [2,-1,0];
 ```
 The results are read as follows: index 0 is matchced up with index 2. Index 1 is not used. Index 2 is matched up with index 0 (redundant information).
-###What's the most basic example of a problem that this solves?
+### What's the most basic example of a problem that this solves?
 Let's assume I own a store & only sell items in groups of two.
 
 - If I sell a PENCIL and an ERASER, I earn $3
