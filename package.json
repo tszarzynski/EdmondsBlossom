@@ -2,7 +2,8 @@
   "name": "edmonds-blossom",
   "version": "1.0.0",
   "description": "Edmond's weighted maximum matching algorithm (Blossom algorithm) ported from http://jorisvr.nl/maximummatching.html",
-  "main": "app/blossom.js",
+  "main": "dist/blossom.js",
+  "types": "dist/blossom.d.ts",
   "keywords": [
     "graph",
     "directional graph",
@@ -11,7 +12,12 @@
     "blossom"
   ],
   "scripts": {
-    "test": "./node_modules/.bin/jasmine-node spec"
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist dist-test coverage",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "repository": {
     "type": "git",
@@ -24,6 +30,8 @@
   },
   "homepage": "https://github.com/mattkrick/EdmondsBlossom#readme",
   "devDependencies": {
-    "jasmine-node": "^1.14.5"
+    "vitest": "^1.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
   }
 }
