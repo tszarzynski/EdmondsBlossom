@@ -1,5 +1,25 @@
 /*Converted to TS from JS by GitHub Copilot. Original JS by Matt Krick from Python: http://jorisvr.nl/maximummatching.html*/
 
+// Constants
+const UNMATCHED = -1;
+const UNLABELED = 0;
+const S_VERTEX = 1; // Vertices in S (exposed vertices)
+const T_VERTEX = 2; // Vertices in T (matched vertices)
+
+// Enhanced type definitions
+type Vertex = number;
+type BlossomId = number;
+type EdgeId = number;
+type Weight = number;
+
+interface BlossomData {
+  parent: BlossomId;
+  children: BlossomId[];
+  base: Vertex;
+  endPoints: number[];
+  bestEdges: EdgeId[];
+}
+
 // Type definitions
 type Edge = [number, number, number]; // [vertex1, vertex2, weight]
 type Matching = number[]; // Array where index is vertex and value is matched vertex (-1 if unmatched)
@@ -22,102 +42,98 @@ class Edmonds {
   private edges: Edge[];
   private maxCardinality: boolean;
   private nEdge: number;
-  private nVertex: number;
-  private maxWeight: number;
-  private endpoint: number[];
-  private neighbend: number[][];
-  private mate: number[];
-  private label: number[];
-  private labelEnd: number[];
-  private inBlossom: number[];
-  private blossomParent: number[];
-  private blossomChilds: number[][];
-  private blossomBase: number[];
-  private blossomEndPs: number[][];
-  private bestEdge: number[];
-  private blossomBestEdges: number[][];
-  private unusedBlossoms: number[];
-  private dualVar: number[];
-  private allowEdge: boolean[];
-  private queue: number[];
+  private nVertex!: number;
+  private maxWeight!: number;
+  private endpoint!: number[];
+  private neighbend!: number[][];
+  private mate!: number[];
+  private label!: number[];
+  private labelEnd!: number[];
+  private inBlossom!: number[];
+  private blossomParent!: number[];
+  private blossomChilds!: number[][];
+  private blossomBase!: number[];
+  private blossomEndPs!: number[][];
+  private bestEdge!: number[];
+  private blossomBestEdges!: number[][];
+  private unusedBlossoms!: number[];
+  private dualVar!: number[];
+  private allowEdge!: boolean[];
+  private queue!: number[];
 
   constructor(edges: Edge[], maxCardinality: boolean) {
     this.edges = edges;
     this.maxCardinality = maxCardinality;
     this.nEdge = edges.length;
     
+    this.initializeGraphProperties();
+    this.initializeBlossomStructures();
+    this.initializeMatchingStructures();
+  }
+
+  private initializeGraphProperties(): void {
     // Calculate nVertex
-    let nVertex = 0;
-    for (let k = 0; k < this.nEdge; k++) {
-      const i = this.edges[k][0];
-      const j = this.edges[k][1];
-      if (i >= nVertex) nVertex = i + 1;
-      if (j >= nVertex) nVertex = j + 1;
-    }
-    this.nVertex = nVertex;
+    this.nVertex = this.calculateVertexCount();
     
     // Calculate maxWeight
-    let maxWeight = 0;
-    for (let k = 0; k < this.nEdge; k++) {
-      const weight = this.edges[k][2];
-      if (weight > maxWeight) {
-        maxWeight = weight;
-      }
-    }
-    this.maxWeight = maxWeight;
+    this.maxWeight = this.calculateMaxWeight();
     
-    // Initialize endpoint
-    const endpoint: number[] = [];
-    for (let p = 0; p < 2 * this.nEdge; p++) {
-      endpoint[p] = this.edges[Math.floor(p / 2)][p % 2];
+    // Initialize endpoint and neighbend
+    this.initializeGraphConnectivity();
+  }
+
+  private calculateVertexCount(): number {
+    let nVertex = 0;
+    for (const [i, j] of this.edges) {
+      nVertex = Math.max(nVertex, i + 1, j + 1);
     }
-    this.endpoint = endpoint;
+    return nVertex;
+  }
+
+  private calculateMaxWeight(): number {
+    return Math.max(0, ...this.edges.map(edge => edge[2]));
+  }
+
+  private initializeGraphConnectivity(): void {
+    // Initialize endpoint
+    this.endpoint = [];
+    for (let p = 0; p < 2 * this.nEdge; p++) {
+      this.endpoint[p] = this.edges[Math.floor(p / 2)][p % 2];
+    }
     
     // Initialize neighbend
-    const neighbend = initArrArr(this.nVertex);
+    this.neighbend = initArrArr(this.nVertex);
     for (let k = 0; k < this.nEdge; k++) {
-      const i = this.edges[k][0];
-      const j = this.edges[k][1];
-      neighbend[i].push(2 * k + 1);
-      neighbend[j].push(2 * k);
+      const [i, j] = this.edges[k];
+      this.neighbend[i].push(2 * k + 1);
+      this.neighbend[j].push(2 * k);
     }
-    this.neighbend = neighbend;
-    
-    // Initialize other arrays
-    this.mate = filledArray(this.nVertex, -1);
-    this.label = filledArray(2 * this.nVertex, 0);
-    this.labelEnd = filledArray(2 * this.nVertex, -1);
-    
-    // Initialize inBlossom
-    const inBlossom: number[] = [];
-    for (let i = 0; i < this.nVertex; i++) {
-      inBlossom[i] = i;
-    }
-    this.inBlossom = inBlossom;
-    
-    this.blossomParent = filledArray(2 * this.nVertex, -1);
+  }
+
+  private initializeBlossomStructures(): void {
+    this.inBlossom = Array.from({ length: this.nVertex }, (_, i) => i);
+    this.blossomParent = filledArray(2 * this.nVertex, UNMATCHED);
     this.blossomChilds = initArrArr(2 * this.nVertex);
     
-    // Initialize blossomBase
-    const base: number[] = [];
-    for (let i = 0; i < this.nVertex; i++) {
-      base[i] = i;
-    }
-    const negs = filledArray(this.nVertex, -1);
+    const base = Array.from({ length: this.nVertex }, (_, i) => i);
+    const negs = filledArray(this.nVertex, UNMATCHED);
     this.blossomBase = base.concat(negs);
     
     this.blossomEndPs = initArrArr(2 * this.nVertex);
-    this.bestEdge = filledArray(2 * this.nVertex, -1);
+    this.bestEdge = filledArray(2 * this.nVertex, UNMATCHED);
     this.blossomBestEdges = initArrArr(2 * this.nVertex);
     
-    // Initialize unusedBlossoms
-    const unusedBlossoms: number[] = [];
-    for (let i = this.nVertex; i < 2 * this.nVertex; i++) {
-      unusedBlossoms.push(i);
-    }
-    this.unusedBlossoms = unusedBlossoms;
+    this.unusedBlossoms = Array.from(
+      { length: this.nVertex }, 
+      (_, i) => i + this.nVertex
+    );
+  }
+
+  private initializeMatchingStructures(): void {
+    this.mate = filledArray(this.nVertex, UNMATCHED);
+    this.label = filledArray(2 * this.nVertex, UNLABELED);
+    this.labelEnd = filledArray(2 * this.nVertex, UNMATCHED);
     
-    // Initialize dualVar
     const mw = filledArray(this.nVertex, this.maxWeight);
     const zeros = filledArray(this.nVertex, 0);
     this.dualVar = mw.concat(zeros);
@@ -677,6 +693,3 @@ function pIndex(arr: number[], idx: number): number {
   // if idx is negative, go from the back
   return idx < 0 ? arr[arr.length + idx] : arr[idx];
 }
-
-// For CommonJS compatibility
-module.exports = blossom;
