@@ -22,19 +22,22 @@
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "clean": "rm -rf dist dist-test coverage",
-    "prepublishOnly": "npm run clean && npm run lint && npm run format:check && npm run build"
+    "prepublishOnly": "npm run clean && npm run lint && npm run format:check && npm run build",
+    "local-release": "changeset version && npm publish --access public",
+    "ci": "npm run build && npm run test && npm run lint && npm run format:check"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mattkrick/EdmondsBlossom.git"
+    "url": "git+https://github.com/tszarzynski/EdmondsBlossom.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mattkrick/EdmondsBlossom/issues"
+    "url": "https://github.com/tszarzynski/EdmondsBlossom/issues"
   },
-  "homepage": "https://github.com/mattkrick/EdmondsBlossom#readme",
+  "homepage": "https://github.com/tszarzynski/EdmondsBlossom#readme",
   "devDependencies": {
+    "@changesets/cli": "^2.29.6",
     "@eslint/js": "^9.33.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
