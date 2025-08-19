@@ -4,7 +4,7 @@ import tsparser from '@typescript-eslint/parser';
 
 export default [
   {
-    ignores: ['dist/**', 'coverage/**', '*.js'],
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**', '*.js', '*.d.ts'],
   },
   js.configs.recommended,
   {
@@ -26,8 +26,6 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-
       // Code quality rules
       'no-console': 'warn',
       'no-debugger': 'error',
@@ -35,13 +33,9 @@ export default [
       'no-unused-expressions': 'error',
       'prefer-const': 'error',
       'no-var': 'error',
-
       // Style rules
       semi: ['error', 'always'],
       quotes: ['error', 'single'],
-
-      // Algorithm-specific rules (more lenient for mathematical code)
-      complexity: ['warn', 15], // Allow higher complexity for graph algorithms
     },
   },
 ];

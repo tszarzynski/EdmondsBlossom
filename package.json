@@ -1,6 +1,6 @@
 {
   "name": "edmonds-blossom",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "description": "Edmond's weighted maximum matching algorithm (Blossom algorithm) ported from http://jorisvr.nl/maximummatching.html",
   "main": "dist/blossom.js",
@@ -13,7 +13,7 @@
     "blossom"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --exclude \"**/*.test.ts\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
